@@ -1,4 +1,8 @@
+import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class Chatbot {
     public static void main(String[] args) {
@@ -6,6 +10,24 @@ public class Chatbot {
         boolean[] messageDone = new boolean[100];
         char[] messageType = new char[100];
         int messageCount = 0;
+        try {
+            File taskFile = new File("./tasks.txt");
+            Scanner taskReader = new Scanner(taskFile);
+            while (taskReader.hasNextLine()) {
+                String task = taskReader.nextLine();
+                messageType[messageCount] = task.charAt(0);
+                messageDone[messageCount] = task.charAt(1) == 't';
+                messageList[messageCount] = task.substring(3);
+                messageCount++;
+            }
+        } catch (Exception e) {
+            File taskFile = new File("./tasks.txt");
+            try {
+                taskFile.createNewFile();
+            } catch (IOException e2) {
+                System.out.println("Error!");
+            }
+        }
         Scanner userInput = new Scanner(System.in);
         System.out.println("Hello! I'm Chatbot!");
         System.out.println("What can I do for you?");
@@ -48,7 +70,7 @@ public class Chatbot {
                     try {
                         int doneTask = Integer.parseInt(userMessage.substring(5));
                         System.out.println("Well done! This task has been marked as done.");
-                        System.out.println("[" + messageType[doneTask] + "]" + "[X] " + messageList[doneTask - 1]);
+                        System.out.println("[" + messageType[doneTask - 1] + "]" + "[X] " + messageList[doneTask - 1]);
                         messageDone[doneTask - 1] = true;
                         continue;
                     } catch (Exception e) {
@@ -93,6 +115,17 @@ public class Chatbot {
             }
             System.out.println("Added this task: " + "[" + messageType[messageCount] + "] " + userMessage);
             messageList[messageCount] = userMessage;
+            try {
+                FileWriter taskWriter = new FileWriter("./tasks.txt", false);
+                for (int taskNumber = 0; taskNumber <= messageCount; taskNumber++) {
+                    taskWriter.write(String.valueOf(messageType[taskNumber]));
+                    taskWriter.write(messageDone[taskNumber] ? "t " : "f ");
+                    taskWriter.write(messageList[taskNumber] + "\n");
+                    taskWriter.flush();
+                }
+            } catch (Exception e) {
+                System.out.println("Error!");
+            }
             messageCount++;
         }
         System.out.println("Bye. Hope to see you again soon!");
